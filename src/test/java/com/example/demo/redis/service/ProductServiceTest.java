@@ -1,21 +1,37 @@
 package com.example.demo.redis.service;
 
 import com.example.demo.redis.KeyUtil;
-import com.example.demo.redis.RedisIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
 import static com.example.demo.redis.KeyUtil.*;
 
-public class ProductServiceTest extends RedisIntegrationTest {
+@SpringBootTest
+@Testcontainers
+public class ProductServiceTest {
+    @Container
+    private final static GenericContainer<?> redis = new GenericContainer<>("redis:6-alpine").withExposedPorts(6379);
+
+    @DynamicPropertySource
+    static void setProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.redis.host", redis::getHost);
+        registry.add("spring.redis.port", () -> redis.getMappedPort(6379));
+    }
+
     @Autowired
     private ProductService productService;
 
